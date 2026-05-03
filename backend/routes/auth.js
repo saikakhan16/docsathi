@@ -6,6 +6,10 @@ const { JWT_SECRET } = require('../config');
 
 const router = express.Router();
 
+router.get('/status', (req, res) => {
+  res.json({ status: 'ok' });
+})
+
 router.post('/register', (req, res) => {
   const { name, email, password, phone, age, gender } = req.body;
   if (!name || !email || !password)
