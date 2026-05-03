@@ -2,8 +2,9 @@
 
 DocSathi is a full-stack healthcare web application where patients can search for doctors and book appointments, and doctors can write digital prescriptions for their patients.
 
-**Live URL:** [https://docsathi-bd76.vercel.app](https://docsathi-bd76.vercel.app)  
-**Backend API:** [https://api.himotechglobal.com/docsathi/api/auth/status](https://api.himotechglobal.com/docsathi/api/auth/status)
+**Live URL:** [https://docsathi-bd76.vercel.app](https://docsathi-bd76.vercel.app) 
+ 
+**Backend Health Check:** [https://api.himotechglobal.com/docsathi/api/auth/status](https://api.himotechglobal.com/docsathi/api/auth/status)
 
 ---
 
