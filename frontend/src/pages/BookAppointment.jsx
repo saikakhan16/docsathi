@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { getDoctorById, getBookedSlots, bookAppointment } from '../data/mockDb';
+import axios from 'axios';
 
 function generateSlots() {
   const slots = [];
@@ -33,16 +33,18 @@ export default function BookAppointment() {
   const [error,        setError]        = useState('');
 
   useEffect(() => {
-    const d = getDoctorById(doctorId);
-    if (!d) { navigate('/'); return; }
-    setDoctor(d);
-  }, [doctorId]);
+  axios.get(`/doctors/${doctorId}`)
+    .then(r => setDoctor(r.data))
+    .catch(() => navigate('/'));
+}, [doctorId]);
 
-  useEffect(() => {
-    if (!date) return;
-    setBookedSlots(getBookedSlots(doctorId, date));
-    setSelectedTime('');
-  }, [date, doctorId]);
+useEffect(() => {
+  if (!date) return;
+  axios.get(`/appointments/booked-slots?doctor_id=${doctorId}&date=${date}`)
+    .then(r => setBookedSlots(r.data))
+    .catch(() => setBookedSlots([]));
+  setSelectedTime('');
+}, [date, doctorId]);
 
   const submit = async (e) => {
     e.preventDefault();

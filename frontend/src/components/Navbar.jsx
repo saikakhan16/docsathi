@@ -31,7 +31,7 @@ export default function Navbar() {
               <>
                 <Link to="/" className="text-gray-600 hover:text-blue-600 transition-colors">Home</Link>
                 <Link to="/#doctors" className="text-gray-600 hover:text-blue-600 transition-colors">Find Doctors</Link>
-                <Link to="/#about" className="text-gray-600 hover:text-blue-600 transition-colors">About</Link>
+                {/* <Link to="/#about" className="text-gray-600 hover:text-blue-600 transition-colors">About</Link> */}
               </>
             )}
             {user?.role === 'patient' && (

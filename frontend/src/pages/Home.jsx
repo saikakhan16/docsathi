@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { getAllDoctors } from '../data/mockDb';
+import axios from 'axios';
 
 const SPEC_COLORS = {
   'Cardiologist':       ['#FF6B6B','#EE4444'],
@@ -28,7 +28,9 @@ export default function Home() {
   const { user } = useAuth();
   const navigate  = useNavigate();
 
-  useEffect(() => { setDoctors(getAllDoctors()); }, []);
+  useEffect(() => {
+  axios.get('/doctors').then(r => setDoctors(r.data)).catch(console.error);
+}, []);
 
   const filtered = doctors.filter(d => {
     const matchSpec = specFilter === 'All Specializations' || d.specialization === specFilter;
@@ -121,7 +123,7 @@ export default function Home() {
         </div>
 
         {/* Search bar */}
-        <div className="max-w-4xl mx-auto px-6 pb-10 relative z-10">
+        <div id="doctors" className="max-w-4xl mx-auto px-6 pb-10 relative z-10">
           <div className="bg-white rounded-2xl shadow-2xl p-3 flex flex-col sm:flex-row gap-3">
             <div className="flex-1 flex items-center gap-3 border border-gray-200 rounded-xl px-4 py-2.5">
               <span className="text-gray-400">🔍</span>

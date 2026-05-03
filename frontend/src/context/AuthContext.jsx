@@ -1,15 +1,16 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
-import * as db from '../data/mockDb';
+
+axios.defaults.baseURL = import.meta.env.VITE_API_URL;
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  const [user,    setUser]    = useState(null);
+  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token    = localStorage.getItem('ds_token');
+    const token = localStorage.getItem('ds_token');
     const userData = localStorage.getItem('ds_user');
     if (token && userData) {
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
@@ -26,13 +27,13 @@ export function AuthProvider({ children }) {
   };
 
   const login = async (email, password) => {
-    const data = db.login(email, password);
+    const { data } = await axios.post('/auth/login', { email, password });
     persist(data.token, data.user);
     return data.user;
   };
 
   const register = async (payload) => {
-    const data = db.register(payload);
+    const { data } = await axios.post('/auth/register', payload);
     persist(data.token, data.user);
     return data.user;
   };
