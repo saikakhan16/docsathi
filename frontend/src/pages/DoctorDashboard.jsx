@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { getMyAppointments, getMyPatients, searchPatients, getPatientAppointments, getBookedSlots, bookAppointmentByDoctor } from '../data/mockDb';
+import axios from 'axios';
 
 const todayStr = () => new Date().toISOString().split('T')[0];
 
@@ -47,8 +47,10 @@ export default function DoctorDashboard() {
 
   const refreshAppointments = () => {
     setLoadingAppt(true);
-    setAppointments(getMyAppointments(user.id, user.role));
-    setLoadingAppt(false);
+    axios.get('/appointments/my')
+      .then(r => setAppointments(r.data))
+      .catch(() => {})
+      .finally(() => setLoadingAppt(false));
   };
 
   useEffect(() => { refreshAppointments(); }, []);
@@ -56,13 +58,16 @@ export default function DoctorDashboard() {
   useEffect(() => {
     if (tab !== 'patients' || patients.length) return;
     setLoadingPat(true);
-    setPatients(getMyPatients(user.id));
-    setLoadingPat(false);
+    axios.get('/patients/my')
+      .then(r => setPatients(r.data))
+      .catch(() => {})
+      .finally(() => setLoadingPat(false));
   }, [tab]);
 
   const openPatient = (p) => {
-    const history = getPatientAppointments(p.id, null);
-    setPatientModal({ patient: p, history });
+    axios.get(`/patients/${p.id}/appointments`)
+      .then(r => setPatientModal({ patient: p, history: r.data }))
+      .catch(() => setPatientModal({ patient: p, history: [] }));
   };
 
   const today     = appointments.filter(a => a.appointment_date === todayStr());
@@ -83,9 +88,7 @@ export default function DoctorDashboard() {
         <div className="max-w-5xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <p className="text-blue-300 text-sm font-medium mb-1">Doctor Portal</p>
-            <h1 className="text-3xl font-bold text-white">
-              {user.name}
-            </h1>
+            <h1 className="text-3xl font-bold text-white">{user.name}</h1>
             <p className="text-blue-200 text-sm mt-1">{user.profile?.specialization} · {user.profile?.clinic_name}</p>
           </div>
           <button onClick={() => setShowNewAppt(true)}
@@ -123,26 +126,22 @@ export default function DoctorDashboard() {
       </div>
 
       <div className="max-w-5xl mx-auto px-4 py-8">
-
         {/* Tabs */}
         <div className="flex gap-1 mb-6 bg-gray-100 rounded-xl p-1 w-fit">
           {[
-            { key: 'today',    label: "Today" },
+            { key: 'today',    label: 'Today' },
             { key: 'all',      label: 'All Appointments' },
             { key: 'patients', label: 'Patients' },
           ].map(t => (
             <button key={t.key} onClick={() => setTab(t.key)}
               className={`px-5 py-2 rounded-lg text-sm font-semibold transition-all ${
-                tab === t.key
-                  ? 'bg-white text-gray-900 shadow'
-                  : 'text-gray-500 hover:text-gray-700'
+                tab === t.key ? 'bg-white text-gray-900 shadow' : 'text-gray-500 hover:text-gray-700'
               }`}>
               {t.label}
             </button>
           ))}
         </div>
 
-        {/* Appointments */}
         {(tab === 'today' || tab === 'all') && (
           loadingAppt ? <Spinner /> :
           displayed.length === 0
@@ -152,7 +151,6 @@ export default function DoctorDashboard() {
               </div>
         )}
 
-        {/* Patient Listing */}
         {tab === 'patients' && (
           loadingPat ? <Spinner /> :
           patients.length === 0
@@ -168,7 +166,6 @@ export default function DoctorDashboard() {
       )}
       {showNewAppt && (
         <NewAppointmentModal
-          doctorId={user.id}
           onClose={() => setShowNewAppt(false)}
           onSuccess={() => { setShowNewAppt(false); refreshAppointments(); }}
         />
@@ -178,7 +175,7 @@ export default function DoctorDashboard() {
 }
 
 /* ── New Appointment Modal ── */
-function NewAppointmentModal({ doctorId, onClose, onSuccess }) {
+function NewAppointmentModal({ onClose, onSuccess }) {
   const [query,        setQuery]        = useState('');
   const [results,      setResults]      = useState([]);
   const [selectedPat,  setSelectedPat]  = useState(null);
@@ -188,35 +185,41 @@ function NewAppointmentModal({ doctorId, onClose, onSuccess }) {
   const [complaint,    setComplaint]    = useState('');
   const [busy,         setBusy]         = useState(false);
   const [error,        setError]        = useState('');
+  const { user } = useAuth();
   const searchTimer = useRef(null);
 
   useEffect(() => {
     if (!query.trim()) { setResults([]); return; }
     clearTimeout(searchTimer.current);
     searchTimer.current = setTimeout(() => {
-      setResults(searchPatients(query));
+      axios.get(`/patients/search?q=${encodeURIComponent(query)}`)
+        .then(r => setResults(r.data))
+        .catch(() => setResults([]));
     }, 300);
   }, [query]);
 
   useEffect(() => {
     if (!date) return;
     setSelectedTime('');
-    setBookedSlots(getBookedSlots(doctorId, date));
-  }, [date, doctorId]);
+    axios.get(`/appointments/booked-slots?doctor_id=${user.id}&date=${date}`)
+      .then(r => setBookedSlots(r.data))
+      .catch(() => setBookedSlots([]));
+  }, [date, user.id]);
 
-  const submit = (e) => {
+  const submit = async (e) => {
     e.preventDefault();
     if (!selectedPat) return setError('Please select a patient');
     if (!selectedTime) return setError('Please select a time slot');
     setBusy(true); setError('');
     try {
-      bookAppointmentByDoctor({
-        doctor_id: doctorId, patient_id: selectedPat.id,
-        appointment_date: date, appointment_time: selectedTime, chief_complaint: complaint || null,
+      await axios.post('/appointments/by-doctor', {
+        patient_id: selectedPat.id,
+        appointment_date: date,
+        appointment_time: selectedTime,
+        chief_complaint: complaint || null,
       });
       onSuccess();
     } catch (err) {
-      console.error(err);
       setError(err.response?.data?.error || 'Failed to schedule appointment');
       setBusy(false);
     }
@@ -228,7 +231,6 @@ function NewAppointmentModal({ doctorId, onClose, onSuccess }) {
     <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center px-4" onClick={onClose}>
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col"
            onClick={e => e.stopPropagation()}>
-
         <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
           <div>
             <h2 className="text-lg font-bold text-gray-900">Schedule Appointment</h2>
@@ -253,7 +255,6 @@ function NewAppointmentModal({ doctorId, onClose, onSuccess }) {
               </div>
             )}
 
-            {/* Patient Search */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">
                 Patient <span className="text-red-400">*</span>
@@ -306,13 +307,11 @@ function NewAppointmentModal({ doctorId, onClose, onSuccess }) {
               )}
             </div>
 
-            {/* Date */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Date <span className="text-red-400">*</span></label>
               <input type="date" value={date} min={todayStr()} onChange={e => setDate(e.target.value)} className={inputClass} />
             </div>
 
-            {/* Time Slots */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Time Slot <span className="text-red-400">*</span></label>
               <div className="grid grid-cols-4 gap-2">
@@ -324,7 +323,7 @@ function NewAppointmentModal({ doctorId, onClose, onSuccess }) {
                       onClick={() => setSelectedTime(slot.value)}
                       className={`py-2 rounded-xl text-xs font-medium border transition-all ${
                         booked   ? 'bg-gray-50 text-gray-300 border-gray-100 cursor-not-allowed line-through' :
-                        selected ? 'text-white border-transparent shadow-sm'                                   :
+                        selected ? 'text-white border-transparent shadow-sm' :
                                    'bg-white text-gray-700 border-gray-200 hover:border-blue-400 hover:text-blue-600'
                       }`}
                       style={selected ? { background: 'linear-gradient(135deg, #0B2149, #1a4a8a)' } : {}}>
@@ -335,7 +334,6 @@ function NewAppointmentModal({ doctorId, onClose, onSuccess }) {
               </div>
             </div>
 
-            {/* Chief Complaint */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Chief Complaint</label>
               <textarea rows={2} value={complaint} onChange={e => setComplaint(e.target.value)}
@@ -400,18 +398,12 @@ function AppointmentCard({ a }) {
           <Link to={`/prescription/${a.prescription_id}`}
             className="flex items-center gap-1.5 text-xs font-semibold px-3.5 py-2 rounded-lg text-white transition"
             style={{ background: 'linear-gradient(135deg, #059669, #0891b2)' }}>
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
             View Rx
           </Link>
         ) : a.status === 'confirmed' ? (
           <Link to={`/prescription/write/${a.id}`}
             className="flex items-center gap-1.5 text-xs font-semibold px-3.5 py-2 rounded-lg text-white transition"
             style={{ background: 'linear-gradient(135deg, #0B2149, #1a4a8a)' }}>
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-            </svg>
             Write Rx
           </Link>
         ) : null}
@@ -437,44 +429,11 @@ function PatientCard({ p, onOpen }) {
           {p.phone && <p className="text-gray-400 text-xs">{p.phone}</p>}
         </div>
       </div>
-
-      <div className="flex flex-wrap gap-2 mb-3">
-        <span className="text-xs px-2.5 py-1 rounded-full font-semibold" style={{ background: '#dbeafe', color: '#1d4ed8' }}>
-          {p.total_appointments} Visit{p.total_appointments !== 1 ? 's' : ''}
-        </span>
-        <span className="text-xs px-2.5 py-1 rounded-full font-semibold" style={{ background: '#d1fae5', color: '#065f46' }}>
-          {p.completed_count} Completed
-        </span>
-        {p.upcoming_count > 0 && (
-          <span className="text-xs px-2.5 py-1 rounded-full font-semibold" style={{ background: '#fef3c7', color: '#92400e' }}>
-            {p.upcoming_count} Upcoming
-          </span>
-        )}
-      </div>
-
-      {p.last_visit && (
-        <p className="text-gray-400 text-xs mb-3">Last visit: {fmtDate(p.last_visit)}</p>
-      )}
-
       <div className="flex gap-2 pt-3 border-t border-gray-100">
         <button onClick={() => onOpen(p)}
           className="flex-1 text-sm font-semibold py-2 rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-50 transition">
           History
         </button>
-        {p.latest_prescription_id && (
-          <Link to={`/prescription/${p.latest_prescription_id}`}
-            className="flex-1 text-sm font-semibold py-2 rounded-xl text-center text-white transition hover:shadow"
-            style={{ background: 'linear-gradient(135deg, #059669, #0891b2)' }}>
-            Latest Rx
-          </Link>
-        )}
-        {p.latest_appointment_id && !p.latest_prescription_id && (
-          <Link to={`/prescription/write/${p.latest_appointment_id}`}
-            className="flex-1 text-sm font-semibold py-2 rounded-xl text-center text-white transition hover:shadow"
-            style={{ background: 'linear-gradient(135deg, #0B2149, #1a4a8a)' }}>
-            Write Rx
-          </Link>
-        )}
       </div>
     </div>
   );
