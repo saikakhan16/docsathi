@@ -1,0 +1,22 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@media print {
+  nav,
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: white !important;
+  }
+  .prescription-paper {
+    box-shadow: none !important;
+    margin: 0 !important;
+    max-width: 100% !important;
+  }
+  @page {
+    size: A4;
+    margin: 15mm;
+  }
+}
