@@ -1,6 +1,6 @@
 # 🏥 DocSathi — Doctor Appointment & Prescription Platform
 
-DocSathi ek full-stack healthcare web application hai jisme patients doctors ko search karke appointment book kar sakte hain, aur doctors apne patients ko digital prescriptions likh sakte hain.
+DocSathi is a full-stack healthcare web application where patients can search for doctors and book appointments, and doctors can write digital prescriptions for their patients.
 
 **Live URL:** [https://docsathi-bd76.vercel.app](https://docsathi-bd76.vercel.app)  
 **Backend API:** [https://api.himotechglobal.com/api/docsathi](https://api.himotechglobal.com/api/docsathi)
