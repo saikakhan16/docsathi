@@ -29,8 +29,8 @@ export default function Navbar() {
           <div className="hidden md:flex items-center gap-8 text-sm font-medium">
             {!user && (
               <>
-                <Link to="/" className="text-gray-600 hover:text-blue-600 transition-colors">Home</Link>
-                <Link to="/#doctors" className="text-gray-600 hover:text-blue-600 transition-colors">Find Doctors</Link>
+                {/* <Link to="//" className="text-gray-600 hover:text-blue-600 transition-colors">Home</Link> */}
+                {/* <Link to="/#doctors" className="text-gray-600 hover:text-blue-600 transition-colors">Find Doctors</Link> */}
                 {/* <Link to="/#about" className="text-gray-600 hover:text-blue-600 transition-colors">About</Link> */}
               </>
             )}
