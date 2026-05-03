@@ -7,6 +7,39 @@ DocSathi is a full-stack healthcare web application where patients can search fo
 **Backend Health Check:** [https://api.himotechglobal.com/docsathi/api/auth/status](https://api.himotechglobal.com/docsathi/api/auth/status)
 
 ---
+## ✨ Features
+
+### 🧑‍💼 Patient Features
+- **Register & Login** — Create an account with email and password
+- **Doctor Search** — Search for doctors by name or specialization
+- **Filter by Specialization** — Filter doctors by Cardiologist, Dermatologist, etc.
+- **Doctor Profile View** — View doctor's fees, clinic details, and experience
+- **Appointment Booking** — Book an appointment by selecting date and time slot
+- **Booked Slots** — Already booked time slots are automatically blocked
+- **Patient Dashboard** — View all your appointments in one place
+- **Appointment Cancel** — Cancel any confirmed appointment
+- **Prescription View** — View prescriptions written by your doctor
+- **Prescription Print** — Print prescription like a PDF
+
+### 👨‍⚕️ Doctor Features
+- **Secure Login** — Login to the dedicated doctor portal
+- **Today's Appointments** — Instantly view all appointments for today
+- **All Appointments** — View complete appointment history
+- **Schedule Appointment** — Book an appointment on behalf of a patient
+- **Patient Search** — Search patients by name or phone number
+- **Patient List** — View all your unique patients in one place
+- **Patient History** — View complete appointment history of any patient
+- **Write Prescription** — Write digital prescriptions with medicines and lab tests
+- **Add Medicines** — Add medicines with dosage, frequency, and duration
+- **Add Lab Tests** — Add required lab tests to the prescription
+- **Follow-up Date** — Set next visit date for the patient
+- **Auto-Complete Appointment** — Appointment is automatically marked completed after prescription is written
+
+### 🔐 Security Features
+- **JWT Authentication** — Every request is verified with a secure token
+- **Password Hashing** — Passwords are encrypted using bcrypt
+- **Role-based Access** — Separate routes and access for patients and doctors
+- **Protected Routes** — Dashboard is not accessible without login
 
 ## 📁 Project Structure
 
