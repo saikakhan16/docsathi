@@ -216,6 +216,7 @@ function NewAppointmentModal({ doctorId, onClose, onSuccess }) {
       });
       onSuccess();
     } catch (err) {
+      console.error(err);
       setError(err.response?.data?.error || 'Failed to schedule appointment');
       setBusy(false);
     }

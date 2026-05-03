@@ -33,30 +33,29 @@ export default function BookAppointment() {
   const [error,        setError]        = useState('');
 
   useEffect(() => {
-  axios.get(`/doctors/${doctorId}`)
-    .then(r => setDoctor(r.data))
-    .catch(() => navigate('/'));
-}, [doctorId]);
+    axios.get(`/doctors/${doctorId}`)
+      .then(r => setDoctor(r.data))
+      .catch(() => navigate('/'));
+  }, [doctorId]);
 
-useEffect(() => {
-  if (!date) return;
-  axios.get(`/appointments/booked-slots?doctor_id=${doctorId}&date=${date}`)
-    .then(r => setBookedSlots(r.data))
-    .catch(() => setBookedSlots([]));
-  setSelectedTime('');
-}, [date, doctorId]);
+  useEffect(() => {
+    if (!date) return;
+    axios.get(`/appointments/booked-slots?doctor_id=${doctorId}&date=${date}`)
+      .then(r => setBookedSlots(r.data))
+      .catch(() => setBookedSlots([]));
+    setSelectedTime('');
+  }, [date, doctorId]);
 
   const submit = async (e) => {
     e.preventDefault();
     if (!selectedTime) return setError('Please select a time slot');
     setBusy(true); setError('');
     try {
-      bookAppointment({
-        patient_id:       user.id,
-        doctor_id:        parseInt(doctorId),
+      await axios.post('/appointments', {
+        doctor_id: parseInt(doctorId),
         appointment_date: date,
         appointment_time: selectedTime,
-        chief_complaint:  complaint,
+        chief_complaint: complaint,
       });
       setSuccess(true);
     } catch (err) {
