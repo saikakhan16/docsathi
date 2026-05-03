@@ -15,10 +15,10 @@ const { PORT } = require('./config');
 app.use(cors());
 app.use(express.json());
 
-app.use('/api/docsathi/auth',          authRoutes);
-app.use('/api/docsathi/doctors',       doctorRoutes);
-app.use('/api/docsathi/appointments',  appointmentRoutes);
-app.use('/api/docsathi/prescriptions', prescriptionRoutes);
-app.use('/api/docsathi/patients',     patientRoutes);
+app.use('/docsathi/api/auth',          authRoutes);
+app.use('/docsathi/api/doctors',       doctorRoutes);
+app.use('/docsathi/api/appointments',  appointmentRoutes);
+app.use('/docsathi/api/prescriptions', prescriptionRoutes);
+app.use('/docsathi/api/patients',     patientRoutes);
 
 app.listen(PORT, () => console.log(`DocSathi API running on http://localhost:${PORT}`));
