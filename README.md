@@ -94,54 +94,7 @@ docsathi/
 
 ---
 
-## ✨ Features
 
-### Patient
-- ✅ Register & Login
-- ✅ Doctors browse karo (specialization se filter)
-- ✅ Doctor search karo (naam ya specialization se)
-- ✅ Appointment book karo (date + time slot select karke)
-- ✅ Apne appointments dashboard pe dekho
-- ✅ Appointment cancel karo
-- ✅ Prescription view karo
-
-### Doctor
-- ✅ Login karo (pre-seeded accounts)
-- ✅ Aaj ke aur saare appointments dekho
-- ✅ Patient ke liye appointment schedule karo
-- ✅ Patient history dekho
-- ✅ Digital prescription likho (medicines + lab tests)
-- ✅ Prescription print karo
-
----
-
-## 🔐 Doctor Login Credentials
-
-Yeh doctors pehle se database mein hain:
-
-| Doctor | Email | Password |
-|--------|-------|----------|
-| Dr. Arjun Sharma (Cardiologist) | arjun.sharma@docsathi.com | doctor123 |
-| Dr. Priya Patel (General Physician) | priya.patel@docsathi.com | doctor123 |
-| Dr. Rahul Mehta (Dermatologist) | rahul.mehta@docsathi.com | doctor123 |
-| Dr. Sunita Rao (Pediatrician) | sunita.rao@docsathi.com | doctor123 |
-| Dr. Vikram Singh (Orthopedic Surgeon) | vikram.singh@docsathi.com | doctor123 |
-| Dr. Meera Nair (Gynecologist) | meera.nair@docsathi.com | doctor123 |
-
----
-
-## 🗄️ Database Schema
-
-```sql
-users                  -- Patients aur Doctors dono
-doctor_profiles        -- Doctor ki extra info (specialization, clinic, fees)
-appointments           -- Booked appointments
-prescriptions          -- Doctor ki likhi prescriptions
-prescription_medicines -- Prescription mein medicines
-prescription_lab_tests -- Prescription mein lab tests
-```
-
----
 
 ## 🔌 API Endpoints
 
@@ -192,7 +145,7 @@ prescription_lab_tests -- Prescription mein lab tests
 cd backend
 npm install
 node server.js
-# Server chalega: http://localhost:5000
+# Server will run at: http://localhost:5000
 ```
 
 ### Frontend Setup
@@ -201,49 +154,43 @@ cd frontend
 npm install
 ```
 
-`.env` file banao `frontend` folder mein:
+Create a `.env` file inside the `frontend` folder:
 ```
 VITE_API_URL=http://localhost:5000/api
 ```
 
 ```bash
 npm run dev
-# Frontend chalega: http://localhost:5173
+# Frontend will run at: http://localhost:5173
 ```
 
 ---
 
 ## 🌐 Production Deployment
 
-### Backend (Server pe)
-Backend already deploy hai:
-```
-https://api.himotechglobal.com/api/docsathi
-```
+### Backend (Server)
+Backend is already deployed at:https://api.himotechglobal.com/api/docsathi
 
-### Frontend (Vercel pe)
+### Frontend (Vercel)
 
-1. GitHub pe push karo:
+1. Push your code to GitHub:
 ```bash
 git add .
 git commit -m "your message"
 git push origin main
 ```
 
-2. [vercel.com](https://vercel.com) pe jaao → New Project → Repo select karo
+2. Go to [vercel.com](https://vercel.com) → New Project → Select your repo
 
-3. Settings:
+3. Configure the following settings:
    - **Root Directory:** `frontend`
    - **Framework:** Vite
    - **Build Command:** `npm run build`
    - **Output Directory:** `dist`
 
-4. Environment Variable add karo:
-```
-VITE_API_URL = https://api.himotechglobal.com/api/docsathi
-```
+4. Add the following Environment Variable:VITE_API_URL = https://api.himotechglobal.com/api/docsathi
 
-5. Deploy! ✅
+5. Click Deploy! ✅
 
 ---
 
