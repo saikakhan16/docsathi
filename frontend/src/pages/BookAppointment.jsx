@@ -33,25 +33,25 @@ export default function BookAppointment() {
   const [error,        setError]        = useState('');
 
   useEffect(() => {
-  axios.get(`/doctors/${doctorId}`)
-    .then(r => setDoctor(r.data))
-    .catch(() => navigate('/'));
-}, [doctorId]);
+    axios.get(`/doctors/${doctorId}`)
+      .then(r => setDoctor(r.data))
+      .catch(() => navigate('/'));
+  }, [doctorId]);
 
-useEffect(() => {
-  if (!date) return;
-  axios.get(`/appointments/booked-slots?doctor_id=${doctorId}&date=${date}`)
-    .then(r => setBookedSlots(r.data))
-    .catch(() => setBookedSlots([]));
-  setSelectedTime('');
-}, [date, doctorId]);
+  useEffect(() => {
+    if (!date) return;
+    axios.get(`/appointments/booked-slots?doctor_id=${doctorId}&date=${date}`)
+      .then(r => setBookedSlots(r.data))
+      .catch(() => setBookedSlots([]));
+    setSelectedTime('');
+  }, [date, doctorId]);
 
   const submit = async (e) => {
     e.preventDefault();
     if (!selectedTime) return setError('Please select a time slot');
     setBusy(true); setError('');
     try {
-      bookAppointment({
+      await axios.post('/appointments', {
         patient_id:       user.id,
         doctor_id:        parseInt(doctorId),
         appointment_date: date,
@@ -64,7 +64,11 @@ useEffect(() => {
     } finally { setBusy(false); }
   };
 
-  if (!doctor) return <div className="flex items-center justify-center min-h-screen text-gray-500">Loading…</div>;
+  if (!doctor) return (
+    <div className="flex items-center justify-center min-h-screen text-gray-500">
+      Loading…
+    </div>
+  );
 
   if (success) {
     return (
@@ -74,11 +78,17 @@ useEffect(() => {
           <h2 className="text-2xl font-bold text-gray-800 mb-2">Appointment Booked!</h2>
           <p className="text-gray-600 mb-6">
             Your appointment with <strong>{doctor.name}</strong> is confirmed for{' '}
-            <strong>{new Date(date + 'T00:00:00').toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' })}</strong>{' '}
+            <strong>
+              {new Date(date + 'T00:00:00').toLocaleDateString('en-IN', {
+                weekday: 'long', day: 'numeric', month: 'long'
+              })}
+            </strong>{' '}
             at <strong>{ALL_SLOTS.find(s => s.value === selectedTime)?.label}</strong>.
           </p>
-          <button onClick={() => navigate('/patient/dashboard')}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-full font-semibold transition">
+          <button
+            onClick={() => navigate('/patient/dashboard')}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-full font-semibold transition"
+          >
             View My Appointments
           </button>
         </div>
@@ -89,29 +99,47 @@ useEffect(() => {
   return (
     <div className="min-h-screen bg-gray-50 py-10 px-4">
       <div className="max-w-2xl mx-auto">
+
+        {/* Doctor Card */}
         <div className="bg-white rounded-2xl shadow p-6 mb-6 flex items-center gap-5">
-          <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center text-3xl">👨‍⚕️</div>
+          <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center text-3xl">
+            👨‍⚕️
+          </div>
           <div>
             <h2 className="text-xl font-bold text-gray-900">{doctor.name}</h2>
             <p className="text-blue-600 font-medium">{doctor.specialization}</p>
             <p className="text-gray-500 text-sm">{doctor.clinic_name} · {doctor.clinic_address}</p>
-            <p className="text-green-600 font-semibold mt-1">Consultation Fee: ₹{doctor.consultation_fee}</p>
+            <p className="text-green-600 font-semibold mt-1">
+              Consultation Fee: ₹{doctor.consultation_fee}
+            </p>
           </div>
         </div>
 
+        {/* Booking Form */}
         <form onSubmit={submit} className="bg-white rounded-2xl shadow p-6 space-y-6">
           <h3 className="text-lg font-bold text-gray-800">Book Appointment</h3>
 
+          {/* Error */}
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm">{error}</div>
+            <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm">
+              {error}
+            </div>
           )}
 
+          {/* Date */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Select Date</label>
-            <input type="date" min={today()} value={date} onChange={e => setDate(e.target.value)} required
-              className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            <input
+              type="date"
+              min={today()}
+              value={date}
+              onChange={e => setDate(e.target.value)}
+              required
+              className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
           </div>
 
+          {/* Time Slots */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Select Time Slot</label>
             <div className="grid grid-cols-4 gap-2">
@@ -119,12 +147,19 @@ useEffect(() => {
                 const isBooked   = bookedSlots.includes(slot.value);
                 const isSelected = selectedTime === slot.value;
                 return (
-                  <button key={slot.value} type="button" disabled={isBooked} onClick={() => setSelectedTime(slot.value)}
+                  <button
+                    key={slot.value}
+                    type="button"
+                    disabled={isBooked}
+                    onClick={() => setSelectedTime(slot.value)}
                     className={`py-2 px-1 rounded-lg text-sm font-medium transition border ${
-                      isBooked   ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed' :
-                      isSelected ? 'bg-blue-600 text-white border-blue-600' :
-                                   'bg-white text-gray-700 border-gray-300 hover:border-blue-400 hover:text-blue-600'
-                    }`}>
+                      isBooked
+                        ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+                        : isSelected
+                        ? 'bg-blue-600 text-white border-blue-600'
+                        : 'bg-white text-gray-700 border-gray-300 hover:border-blue-400 hover:text-blue-600'
+                    }`}
+                  >
                     {slot.label}
                     {isBooked && <span className="block text-xs text-gray-400">Booked</span>}
                   </button>
@@ -133,18 +168,30 @@ useEffect(() => {
             </div>
           </div>
 
+          {/* Complaint */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Chief Complaint (optional)</label>
-            <textarea rows={3} value={complaint} onChange={e => setComplaint(e.target.value)}
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Chief Complaint (optional)
+            </label>
+            <textarea
+              rows={3}
+              value={complaint}
+              onChange={e => setComplaint(e.target.value)}
               placeholder="Briefly describe your symptoms or reason for visit…"
-              className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none" />
+              className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+            />
           </div>
 
-          <button type="submit" disabled={busy || !selectedTime}
-            className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white font-semibold py-3 rounded-xl transition text-lg">
+          {/* Submit */}
+          <button
+            type="submit"
+            disabled={busy || !selectedTime}
+            className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white font-semibold py-3 rounded-xl transition text-lg"
+          >
             {busy ? 'Booking…' : 'Confirm Appointment'}
           </button>
         </form>
+
       </div>
     </div>
   );
