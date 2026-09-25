@@ -1,39 +1,49 @@
-name: Docker Build
+name: Build and Publish Docker Images
 
 on:
   push:
     branches:
       - main
-      - master
+  workflow_dispatch:
 
-  pull_request:
-    branches:
-      - main
-      - master
+permissions:
+  contents: read
+  packages: write
 
 jobs:
-  docker-build:
+  docker:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build Backend Docker Image
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and Publish Backend
         uses: docker/build-push-action@v6
         with:
           context: ./backend
           file: ./backend/Dockerfile
-          push: false
-          tags: docsathi-backend:latest
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/docsathi-backend:latest
+            ghcr.io/${{ github.repository_owner }}/docsathi-backend:${{ github.sha }}
 
-      - name: Build Frontend Docker Image
+      - name: Build and Publish Frontend
         uses: docker/build-push-action@v6
         with:
           context: ./frontend
           file: ./frontend/Dockerfile
-          push: false
-          tags: docsathi-frontend:latest
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/docsathi-frontend:latest
+            ghcr.io/${{ github.repository_owner }}/docsathi-frontend:${{ github.sha }}
